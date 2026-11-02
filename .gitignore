@@ -1,0 +1,9 @@
+# Gerados pela compilação e pela execução
+build/
+resultados/
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+rodar_todos

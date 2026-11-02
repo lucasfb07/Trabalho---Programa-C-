@@ -1,0 +1,13 @@
+{
+    // Trata os .h como C (e não C++) e usa o padrão C11 no IntelliSense.
+    "files.associations": {
+        "*.h": "c"
+    },
+    "C_Cpp.default.cStandard": "c11",
+    // Esconde os arquivos gerados na compilação.
+    "files.exclude": {
+        "**/*.exe": true,
+        "**/*.obj": true,
+        "**/*.o": true
+    }
+}

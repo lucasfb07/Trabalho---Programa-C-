@@ -1,0 +1,52 @@
+{
+    // Terminal -> Executar Tarefa... (ou Ctrl+Shift+B para a primeira).
+    // Compila o rodar_todos.c (gcc, ou cl se não houver gcc) e executa.
+    // Para o MSVC (cl), abra o VS Code a partir do "Developer Command Prompt".
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compilar e executar todos os algoritmos",
+            "type": "shell",
+            "command": "where gcc >nul 2>nul & if errorlevel 1 (cl /nologo /O2 /std:c11 rodar_todos.c && rodar_todos.exe) else (gcc -O2 -std=c11 rodar_todos.c -o rodar_todos.exe && rodar_todos.exe)",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": ["/d", "/c"]
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": ["$msCompile", "$gcc"]
+        },
+        {
+            // Roda só o algoritmo do arquivo .c aberto (src/<nome>.c).
+            "label": "Compilar e executar o algoritmo aberto",
+            "type": "shell",
+            "command": "where gcc >nul 2>nul & if errorlevel 1 (cl /nologo /O2 /std:c11 rodar_todos.c && rodar_todos.exe ${fileBasenameNoExtension}) else (gcc -O2 -std=c11 rodar_todos.c -o rodar_todos.exe && rodar_todos.exe ${fileBasenameNoExtension})",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": ["/d", "/c"]
+                }
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": ["$msCompile", "$gcc"]
+        }
+    ]
+}
