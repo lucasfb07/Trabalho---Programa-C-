@@ -1,0 +1,17 @@
+{
+    // F5 / botão ▶: compila o executor em build\ (com a mesma tarefa do Ctrl+Shift+B)
+    // e roda os quatro algoritmos. Assim nada é compilado na raiz do projeto.
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Rodar todos os algoritmos",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}\\build\\rodar_todos.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Compilar o executor"
+        }
+    ]
+}

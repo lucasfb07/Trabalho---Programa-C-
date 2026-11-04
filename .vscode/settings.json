@@ -4,6 +4,9 @@
         "*.h": "c"
     },
     "C_Cpp.default.cStandard": "c11",
+    // Esconde o botão ▶ "Run C/C++ File": ele compila sem otimização, fora de build/,
+    // e recria uma tarefa de build que substitui o Ctrl+Shift+B deste projeto.
+    "C_Cpp.debugShortcut": false,
     // Esconde os arquivos gerados na compilação.
     "files.exclude": {
         "**/*.exe": true,

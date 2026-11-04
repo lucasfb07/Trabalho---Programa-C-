@@ -120,11 +120,13 @@ void ordenar_variante(int *v, int n, Contadores *cont);
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
+#include <direct.h>
 #ifdef _MSC_VER
 #pragma comment(lib, "advapi32.lib")
 #endif
 #else
 #include <pthread.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -773,6 +775,28 @@ static void executar(const char *nome, Ordenacao ordena_tempo, Ordenacao ordena_
     printf("  planilha:  %s\n", caminho);
 }
 
+/* Cada conjunto de entradas tem a sua pasta, nomeada pela assinatura: rodar de novo
+ * com as mesmas entradas substitui o resultado; com outras entradas, cria outra pasta. */
+static void entrar_na_pasta_das_entradas(unsigned long long assinatura)
+{
+    char pasta[64];
+    int erro;
+    snprintf(pasta, sizeof pasta, "%s_%08x", TESTE_RAPIDO ? "rapido" : "completo",
+             (unsigned)(assinatura >> 32));
+#ifdef _WIN32
+    _mkdir(pasta);
+    erro = _chdir(pasta);
+#else
+    mkdir(pasta, 0755);
+    erro = chdir(pasta);
+#endif
+    if (erro != 0) {
+        fprintf(stderr, "ERRO: nao foi possivel criar a pasta de resultados %s\n", pasta);
+        exit(EXIT_FAILURE);
+    }
+    printf("Pasta dos resultados: %s\n", pasta);
+}
+
 static void experimento(void)
 {
     int ntam = num_tamanhos();
@@ -784,6 +808,7 @@ static void experimento(void)
 #endif
     printf("Calculando a assinatura das entradas...\n");
     unsigned long long assinatura = assinatura_entradas(ntam);
+    entrar_na_pasta_das_entradas(assinatura);
 
     executar(NOME_ALGORITMO, ordenar, VERSAO_CONTAGEM, ntam, assinatura);
 #ifdef VARIANTE

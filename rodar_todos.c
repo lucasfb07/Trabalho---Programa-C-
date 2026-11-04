@@ -7,7 +7,9 @@
  * executavel dentro de resultados/. Usa o gcc se estiver no PATH; senao, o cl (MSVC),
  * que exige o "Developer Command Prompt".
  *
- * Compilar este programa:   gcc rodar_todos.c -o rodar_todos   ou   cl rodar_todos.c
+ * Compilar este programa (gera build\rodar_todos.exe):
+ *   gcc rodar_todos.c -o build\rodar_todos.exe
+ *   cl rodar_todos.c /Fo"build\\" /Fe"build\rodar_todos.exe"
  */
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
@@ -15,6 +17,8 @@
 #include <string.h>
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <direct.h>
 #define SEP "\\"
 #define EXE ".exe"
@@ -57,20 +61,35 @@ static int executar(const char *comando)
     return system(linha);
 }
 
-/* 0 = gcc, 1 = MSVC (cl), -1 = nenhum */
+/* 0 = gcc, 1 = MSVC (cl), -1 = nenhum. Só procura no PATH, sem executar o compilador. */
 static int detectar_compilador(void)
 {
-    if (executar("gcc --version > " NULO " 2>&1") == 0)
-        return 0;
 #ifdef _WIN32
-    if (executar("cl /? > " NULO " 2>&1") == 0)
+    if (executar("where gcc > nul 2>&1") == 0)
+        return 0;
+    if (executar("where cl > nul 2>&1") == 0)
         return 1;
+#else
+    if (executar("command -v gcc > /dev/null 2>&1") == 0)
+        return 0;
 #endif
     return -1;
 }
 
+/* Apaga os arquivos intermediários da compilação; só o .exe fica em build/. */
+static void apagar_intermediarios(const char *nome)
+{
+    static const char *const sufixos[] = {"_contagem.o", "_contagem.obj", ".obj"};
+    char caminho[256];
+    for (size_t i = 0; i < sizeof sufixos / sizeof sufixos[0]; i++) {
+        snprintf(caminho, sizeof caminho, PASTA_BUILD SEP "%s%s", nome, sufixos[i]);
+        remove(caminho);   /* se não existir, tudo bem */
+    }
+}
+
 static int compilar(int compilador, const char *nome)
 {
+    int erro;
     char cmd[1536];
     if (compilador == 0) {
         const char *flags = "-O2 -std=c11 -Wall -Wextra -DDUAS_VERSOES";
@@ -88,7 +107,9 @@ static int compilar(int compilador, const char *nome)
         snprintf(cmd, sizeof cmd,
                  "gcc %s \"" PASTA_FONTES SEP "%s.c\" \"" PASTA_BUILD SEP "%s_contagem.o\" -o \"" PASTA_BUILD SEP "%s" EXE "\" %s",
                  flags, nome, nome, nome, extra);
-        return executar(cmd) != 0;
+        erro = executar(cmd) != 0;
+        apagar_intermediarios(nome);
+        return erro;
     }
     {
         const char *flags = "/nologo /O2 /std:c11 /W4 /utf-8 /DDUAS_VERSOES";
@@ -102,7 +123,9 @@ static int compilar(int compilador, const char *nome)
                  "cl %s \"" PASTA_FONTES SEP "%s.c\" \"" PASTA_BUILD SEP "%s_contagem.obj\" /Fo\"" PASTA_BUILD SEP "%s.obj\" /Fe\""
                  PASTA_BUILD SEP "%s" EXE "\"",
                  flags, nome, nome, nome, nome);
-        return executar(cmd) != 0;
+        erro = executar(cmd) != 0;
+        apagar_intermediarios(nome);
+        return erro;
     }
 }
 
@@ -136,6 +159,16 @@ int main(int argc, char **argv)
         return 1;
     }
     fclose(teste);
+
+#ifdef _WIN32
+    /* Um experimento por vez: dois ao mesmo tempo disputariam a CPU e estragariam
+     * os tempos (o mutex é liberado sozinho quando o programa termina). */
+    CreateMutexA(NULL, FALSE, "Local\\rodar_todos_experimento");
+    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        fprintf(stderr, "ERRO: ja existe um rodar_todos rodando. Espere ele terminar.\n");
+        return 1;
+    }
+#endif
 
     if (argc <= 1) {
         for (int i = 0; i < NUM_ALGORITMOS; i++)

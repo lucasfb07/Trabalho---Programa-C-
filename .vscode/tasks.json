@@ -1,13 +1,33 @@
 {
-    // Terminal -> Executar Tarefa... (ou Ctrl+Shift+B para a primeira).
-    // Compila o rodar_todos.c (gcc, ou cl se não houver gcc) e executa.
-    // Para o MSVC (cl), abra o VS Code a partir do "Developer Command Prompt".
+    // Ctrl+Shift+B: compila o executor em build\ e roda os quatro algoritmos.
+    // Usa o gcc se estiver no PATH; senão, o cl (MSVC, pelo Developer Command Prompt).
+    // Se já houver um rodar_todos.exe rodando, avisa em vez de recompilar por cima dele.
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Compilar o executor",
+            "type": "shell",
+            "command": "tasklist /fi \"imagename eq rodar_todos.exe\" /nh | find /i \"rodar_todos.exe\" >nul && (echo ERRO: ja existe um rodar_todos.exe rodando. Espere ele terminar ou feche-o antes de compilar de novo. & exit 1) & (if not exist build mkdir build) & where gcc >nul 2>nul & if errorlevel 1 (cl /nologo /O2 /std:c11 rodar_todos.c /Fo\"build\\\\\" /Fe\"build\\rodar_todos.exe\") else (gcc -O2 -std=c11 rodar_todos.c -o build\\rodar_todos.exe)",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": ["/d", "/c"]
+                }
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": ["$msCompile", "$gcc"]
+        },
+        {
             "label": "Compilar e executar todos os algoritmos",
             "type": "shell",
-            "command": "where gcc >nul 2>nul & if errorlevel 1 (cl /nologo /O2 /std:c11 rodar_todos.c && rodar_todos.exe) else (gcc -O2 -std=c11 rodar_todos.c -o rodar_todos.exe && rodar_todos.exe)",
+            "command": "build\\rodar_todos.exe",
+            "dependsOn": "Compilar o executor",
             "options": {
                 "cwd": "${workspaceFolder}",
                 "shell": {
@@ -22,16 +42,16 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "shared",
-                "clear": true,
                 "focus": true
             },
-            "problemMatcher": ["$msCompile", "$gcc"]
+            "problemMatcher": []
         },
         {
             // Roda só o algoritmo do arquivo .c aberto (src/<nome>.c).
             "label": "Compilar e executar o algoritmo aberto",
             "type": "shell",
-            "command": "where gcc >nul 2>nul & if errorlevel 1 (cl /nologo /O2 /std:c11 rodar_todos.c && rodar_todos.exe ${fileBasenameNoExtension}) else (gcc -O2 -std=c11 rodar_todos.c -o rodar_todos.exe && rodar_todos.exe ${fileBasenameNoExtension})",
+            "command": "build\\rodar_todos.exe ${fileBasenameNoExtension}",
+            "dependsOn": "Compilar o executor",
             "options": {
                 "cwd": "${workspaceFolder}",
                 "shell": {
@@ -43,10 +63,9 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "shared",
-                "clear": true,
                 "focus": true
             },
-            "problemMatcher": ["$msCompile", "$gcc"]
+            "problemMatcher": []
         }
     ]
 }

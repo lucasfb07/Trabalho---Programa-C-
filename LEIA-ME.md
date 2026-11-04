@@ -10,7 +10,7 @@
 │   ├── binary_insertion_sort.c
 │   └── avl_tree_sort.c           ← Tree Sort com árvore AVL (balanceada)
 ├── build/                        ← executáveis (gerado)
-├── resultados/                   ← relatórios .txt e planilhas .csv (gerado)
+├── resultados/                   ← relatórios .txt e planilhas .csv, uma subpasta por entrada (gerado)
 └── .vscode/                      ← tarefas do VS Code
 ```
 
@@ -28,21 +28,29 @@ um depois do outro (nunca em paralelo, para um não atrapalhar o tempo do outro)
 1. Compile o executor (uma vez), na pasta do projeto:
 
    ```
-   gcc rodar_todos.c -o rodar_todos
+   mkdir build
+   gcc rodar_todos.c -o build\rodar_todos.exe
    ```
 
-   Com o Visual Studio (MSVC), faça isso no **Developer Command Prompt**: `cl rodar_todos.c`.
-2. Rode todos os algoritmos, ou só alguns:
+   Com o Visual Studio (MSVC), faça isso no **Developer Command Prompt**:
+   `cl rodar_todos.c /Fo"build\\" /Fe"build\rodar_todos.exe"`.
+2. Rode todos os algoritmos, ou só alguns, sempre da pasta do projeto:
 
    ```
-   .\rodar_todos
-   .\rodar_todos quick_sort avl_tree_sort
+   build\rodar_todos
+   build\rodar_todos quick_sort avl_tree_sort
    ```
+
+   Não recompile o executor enquanto ele estiver rodando: o Windows não deixa
+   sobrescrever um `.exe` em uso (erro `LNK1104` no MSVC).
 
    Nomes válidos: `selection_sort`, `quick_sort`, `binary_insertion_sort`, `avl_tree_sort`.
 
 No VS Code: abra a pasta do projeto e use **Terminal → Executar Tarefa…**
-(ou Ctrl+Shift+B). Para o MSVC, abra o VS Code a partir do Developer Command Prompt.
+(ou Ctrl+Shift+B, ou F5). Os três compilam o executor em `build\` e rodam os
+algoritmos. Para o MSVC, abra o VS Code a partir do Developer Command Prompt.
+Se um experimento já estiver rodando, uma segunda execução é recusada com aviso,
+porque dois experimentos ao mesmo tempo estragariam os tempos medidos.
 
 O programa usa o gcc se ele estiver no PATH; senão, o `cl` (MSVC). Compila com
 otimização, roda o experimento e mostra o relatório no terminal. Os executáveis
@@ -75,6 +83,13 @@ Por isso, rode os 4 algoritmos **na mesma sessão e nas mesmas condições**.
 ---
 
 ## O que é gerado (na pasta `resultados\`)
+
+Cada conjunto de entradas tem a sua subpasta, nomeada pela assinatura das entradas:
+`resultados\completo_4d91c72a\` para o experimento completo e `resultados\rapido_1fd3eebf\`
+para o teste rápido. Rodar de novo com as mesmas entradas substitui o resultado
+anterior daquele algoritmo. Mudar as entradas (tamanhos, repetições, sementes ou
+`TESTE_RAPIDO`) muda a assinatura, e o resultado vai para outra subpasta, sem apagar
+o anterior.
 
 | Arquivo | Conteúdo |
 |---|---|
